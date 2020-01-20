@@ -52,6 +52,7 @@ class Dataset(data.Dataset):
         self.data = json.load(open(data_path,'rb'))
         self.list_uids = list(self.data.keys())
 
+
     def __len__(self):
         return len(self.data)
 
@@ -63,6 +64,10 @@ class Dataset(data.Dataset):
         # X = torch.load('data/' + id + '.pt')
         y = self.data[id]["sent"]
         return X,y
+
+
+def load_embeddings():
+
 
 # if __name__ == '__main__':
 #     from torch.utils.data import DataLoader
