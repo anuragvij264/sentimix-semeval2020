@@ -1,4 +1,7 @@
 # User defined
+bin/embeddings/*
+temp/*
+
 .idea/
 .idea/*
 
