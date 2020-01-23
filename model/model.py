@@ -21,7 +21,7 @@ class Classifier(nn.Module):
 
         self.lstm = nn.LSTM(embedding_length, hidden_state_size)
         self.label = nn.Linear(hidden_state_size, output_size)
-        self.sigmoid = nn.Sigmoid()
+        self.softmax = nn.Softmax(dim=2)
 
     def forward(self, input_sentence, batch_size=None):
         input_sentence_embedding = self.word_embeddings(input_sentence)
@@ -32,7 +32,7 @@ class Classifier(nn.Module):
 
         lstm_out, (final_hidden_state, final_cell_state) = self.lstm(input_sentence_embedding.float(), (h_0, c_0))
         linear_out = self.label(final_hidden_state)
-        return self.sigmoid(linear_out)
+        return self.softmax(linear_out)
 
     def load_embeddings(self, path, lang):
         weights = torch.load(open(os.path.join(path, "embeddings_{}.pth".format(lang)), "rb"))
