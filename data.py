@@ -6,12 +6,11 @@ from gensim.models import FastText
 from gensim.test.utils import get_tmpfile
 from gensim.test.utils import datapath
 
-
 import logging
+
 logging.basicConfig(level=logging.INFO)
 
-
-data  = json.load(open('data.json','r'))
+data = json.load(open('data.json', 'r'))
 
 
 def _get_words(tweet):
@@ -20,7 +19,8 @@ def _get_words(tweet):
     output: just words
 
     """
-    return [w.split('\t')[0] for w in tweet ]
+    return [w.split('\t')[0] for w in tweet]
+
 
 class DataIter(object):
 
@@ -35,15 +35,13 @@ class DataIter(object):
             yield _get_words(data[uid]["text"])
 
 
-
-
-if __name__=='__main__':
-    data_= DataIter()
+if __name__ == '__main__':
+    data_ = DataIter()
 
     model = FastText(sg=1, hs=1, min_n=4, max_n=6)
-    model.build_vocab(sentences = DataIter())
+    model.build_vocab(sentences=DataIter())
     total_examples = model.corpus_count
-    model.train(sentences = DataIter(),total_examples=total_examples,epochs = 10)
+    model.train(sentences=DataIter(), total_examples=total_examples, epochs=10)
 
     temp_file = datapath("model")
 

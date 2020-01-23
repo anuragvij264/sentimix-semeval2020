@@ -1,8 +1,9 @@
 from torch.utils.data import DataLoader
 from pipeline.trans import Dataset
+from config import bin_path, data_path
 
-dset = Dataset(binPath="/Users/avij1/Desktop/imp_shit/sec/bin",data_path="/Users/avij1/Desktop/imp_shit/sec/data/data.json")
-loader = DataLoader(dataset=dset,batch_size=12)
+d_set = Dataset(binPath=bin_path, data_path=data_path + 'data.json')
+loader = DataLoader(dataset=d_set, batch_size=12)
 
-for idx,(batch_ndx,sample) in enumerate(loader):
+for idx, (batch_ndx, sample) in enumerate(loader):
     print(sample)
