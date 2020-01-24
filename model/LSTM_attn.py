@@ -22,7 +22,7 @@ class Classifier(nn.Module):
 
         self.lstm = nn.LSTM(embedding_length, hidden_state_size)
         self.label = nn.Linear(hidden_state_size, output_size)
-        self.softmax = nn.Softmax(dim=2)
+        self.softmax = nn.Softmax(dim=1)
 
     def attention_net(self, lstm_output, final_state):
         hidden = final_state.squeeze(0)
@@ -38,11 +38,11 @@ class Classifier(nn.Module):
         h_0 = Variable(torch.zeros(1, self.batch_size, self.hidden_state_size)).to(device)
         c_0 = Variable(torch.zeros(1, self.batch_size, self.hidden_state_size)).to(device)
 
-        output, (final_hidden_state, final_cell_state) = self.lstm(input_sentence_embedding, (h_0, c_0))
+        output, (final_hidden_state, final_cell_state) = self.lstm(input_sentence_embedding.float(), (h_0, c_0))
         output = output.permute(1, 0, 2)
         attn_output = self.attention_net(output, final_hidden_state)
         logits = self.label(attn_output)
-        return self.softmax(logits)
+        return logits
 
     def load_embeddings(self, path, lang):
         weights = torch.load(open(os.path.join(path, "embeddings_{}.pth".format(lang)), "rb"))
