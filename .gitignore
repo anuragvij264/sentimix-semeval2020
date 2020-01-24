@@ -1,7 +1,8 @@
 # User defined
 bin/embeddings/*
 temp/*
-
+pipeline/__pycache__/
+pipeline/__pycache__/*
 .idea/
 .idea/*
 
