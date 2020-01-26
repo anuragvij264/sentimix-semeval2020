@@ -68,10 +68,11 @@ class Dataset(data.Dataset):
         idx_hi_list = set(self.uid2hi_index[id])
 
         X_ = self.tensorify_sentences(idx_hi_list,X)
-        print(X_)
+        # print(X_)
 
+        X_ = X_.permute(1,0)
         y = self.data[id]["sent"]
-        return X, y
+        return X_, y
 
     def tokenize(self, uid, word2id):
         return [word2id[i.split('\t')[0]] for i in self.data[uid]['text']]
@@ -121,11 +122,11 @@ class Dataset(data.Dataset):
 
         try:
             trans_word = trans.transliterate(word)
+            return trans_word[0][0]
         # print(trans_word[0][0])
         except:
 
             #TODO: Code breaking here transliteration package breaks
             # - Temp fix to incorporate UNK token
-            pass
+            return "पंजाब"
 
-        return trans_word[0][0]
