@@ -8,7 +8,7 @@ import os
 import torch.nn as nn
 import numpy as np
 from config import data_path
-from typing import Set,List
+from typing import Set, List
 
 data_path = data_path + "data.json"
 
@@ -46,17 +46,17 @@ class Dataset(data.Dataset):
         self.word2ids = torch.load(os.path.join(binPath, "word2ids.pth"))
         self.uid2hin = torch.load(os.path.join(binPath, "uid2hin.pth"))
         # self.ids2word = torch.load(os.path.join(binPath, "ids2word.pth"))
-        #TODO: Fix this mapping,
+        # TODO: Fix this mapping,
         self.ids2word = {j: i for i, j in self.word2ids.items()}
         self.word2id_en = torch.load(open(os.path.join(binPath, "embeddings", "word2id_en.pth"), "rb"))
         self.word2id_hi = torch.load(open(os.path.join(binPath, "embeddings", "word2id_hi.pth"), "rb"))
         self.data = json.load(open(data_path, 'rb'))
         self.list_uids = list(self.data.keys())
 
-        self.hi_embeddings = self.load_embeddings(path=os.path.join(binPath,"embeddings"),lang='hi')
-        self.en_embeddings = self.load_embeddings(path=os.path.join(binPath,"embeddings"),lang='en')
+        self.hi_embeddings = self.load_embeddings(path=os.path.join(binPath, "embeddings"), lang='hi')
+        self.en_embeddings = self.load_embeddings(path=os.path.join(binPath, "embeddings"), lang='en')
 
-        self.uid2hi_index = torch.load(open("../uid2hi_idx.pth","rb"))
+        self.uid2hi_index = torch.load(open(os.path.join(binPath, "uid2hi_idx.pth"), "rb"))
         self.embed_dim = 300
 
     def __len__(self):
@@ -67,10 +67,10 @@ class Dataset(data.Dataset):
         X = self.tokenize(id, self.word2ids)
         idx_hi_list = set(self.uid2hi_index[id])
 
-        X_ = self.tensorify_sentences(idx_hi_list,X)
+        X_ = self.tensorify_sentences(idx_hi_list, X)
         # print(X_)
 
-        X_ = X_.permute(1,0)
+        X_ = X_.permute(1, 0)
         y = self.data[id]["sent"]
         return X_, y
 
@@ -83,31 +83,30 @@ class Dataset(data.Dataset):
         # embeddings = nn.Embedding.from_pretrained(weights)
         return weights
 
-    def tensorify_sentences(self,idx_hi_list: Set[int],X: List[int]) -> torch.Tensor:
-        array = np.zeros((self.embed_dim,len(X)))
+    def tensorify_sentences(self, idx_hi_list: Set[int], X: List[int]) -> torch.Tensor:
+        array = np.zeros((self.embed_dim, len(X)))
 
-        for i,_ in enumerate(X):
+        for i, _ in enumerate(X):
             word = self.ids2word[X[i]]
 
             if i in idx_hi_list:
-                array[:,i] = self._lookup_embeddings(word,lang = 'hi')
+                array[:, i] = self._lookup_embeddings(word, lang='hi')
 
-            array[:,i] = self._lookup_embeddings(word,lang = 'en')
+            array[:, i] = self._lookup_embeddings(word, lang='en')
 
         resulting_tensor = torch.from_numpy(array)
         return resulting_tensor
 
+    def _lookup_embeddings(self, word, lang):
 
-    def _lookup_embeddings(self,word,lang):
-
-        if lang =='hi':
+        if lang == 'hi':
             word = self._transliterate(word)
             if word in self.word2id_hi:
-                print(word)
                 idx = self.word2id_hi[word]
                 return self.hi_embeddings[idx]
 
-            else: return np.zeros((1,self.embed_dim))
+            else:
+                return np.zeros((1, self.embed_dim))
         else:
             if word in self.word2id_en:
                 # print(word)
@@ -116,9 +115,9 @@ class Dataset(data.Dataset):
 
             else:
                 # print(word)
-                return np.zeros((1,self.embed_dim))
+                return np.zeros((1, self.embed_dim))
 
-    def _transliterate(self,word):
+    def _transliterate(self, word):
 
         try:
             trans_word = trans.transliterate(word)
@@ -126,7 +125,6 @@ class Dataset(data.Dataset):
         # print(trans_word[0][0])
         except:
 
-            #TODO: Code breaking here transliteration package breaks
+            # TODO: Code breaking here transliteration package breaks
             # - Temp fix to incorporate UNK token
             return "पंजाब"
-

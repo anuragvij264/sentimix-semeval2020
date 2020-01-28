@@ -14,16 +14,17 @@ n_embed = 300
 n_hidden = 10
 output_size = 2
 
+device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
+
 net = Classifier(batch_size, n_hidden, n_vocab, n_embed, output_size)
 
-criterion = nn.BCELoss()
+criterion = nn.BCEWithLogitsLoss()
 optimizer = optim.Adam(net.parameters(), lr=0.001)
 
 print_every = 100
 step = 0
-n_epochs = 4  # validation loss increases from ~ epoch 3 or 4
+n_epochs = 1  # validation loss increases from ~ epoch 3 or 4
 clip = 5  # for gradient clip to prevent exploding gradient problem in LSTM/RNN
-device = 'cuda' if torch.cuda.is_available else 'cpu'
 
 d_set_train = Dataset(binPath=bin_path, data_path=data_path + 'data.json')
 train_loader = DataLoader(dataset=d_set_train, batch_size=12, collate_fn=custom_collate)
@@ -36,8 +37,6 @@ for epoch in range(n_epochs):
     for inputs, labels in train_loader:
         step += 1
         inputs, labels = inputs.to(device), labels.to(device)
-        h = tuple([each.data for each in h])
-
         net.zero_grad()
         output_train = net(inputs)
         loss = criterion(output_train.squeeze(), labels.float())

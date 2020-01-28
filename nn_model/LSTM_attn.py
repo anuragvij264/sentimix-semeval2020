@@ -22,7 +22,7 @@ class Classifier(nn.Module):
 
         self.lstm = nn.LSTM(embedding_length, hidden_state_size)
         self.label = nn.Linear(hidden_state_size, output_size)
-        self.softmax = nn.Softmax(dim=2)
+        self.sigmoid = nn.Sigmoid()
 
     def attention_net(self, lstm_output, final_state):
         hidden = final_state.squeeze(0)
@@ -41,8 +41,8 @@ class Classifier(nn.Module):
         output, (final_hidden_state, final_cell_state) = self.lstm(input_sentence_embedding, (h_0, c_0))
         output = output.permute(1, 0, 2)
         attn_output = self.attention_net(output, final_hidden_state)
-        logits = self.label(attn_output)
-        return self.softmax(logits)
+        linear_out = self.label(attn_output)
+        return self.sigmoid(linear_out)
 
     def load_embeddings(self, path, lang):
         weights = torch.load(open(os.path.join(path, "embeddings_{}.pth".format(lang)), "rb"))
@@ -64,7 +64,7 @@ if __name__ == '__main__':
         "hidden_state_size": 10,
         "vocab_size": 100000,
         "embedding_length": 300,
-        "output_size": 3
+        "output_size": 1
     }
     cls = Classifier(**params)
     input = torch.LongTensor([[12, 123, 87, 980], [23, 34, 76, 98]]).to(device)
