@@ -9,11 +9,11 @@ device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
 
 def custom_collate(batch):
     data = [item[0] for item in batch]
-    target = [item[1] for item in batch]
+    target = [[0, 1] if item[1] == 'positive' else [1, 0] for item in batch]
     length = [len(x) for x in data]
     data = sequence.pad_sequences(data, maxlen=max(length))
     data = torch.tensor(data, dtype=torch.long)
-    target = torch.tensor(int(target == 'positive'), dtype=torch.float32)
+    target = torch.tensor(target, dtype=torch.float32)
     return [data, target]
 
 
