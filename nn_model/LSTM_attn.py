@@ -22,7 +22,10 @@ class Classifier(nn.Module):
 
         self.lstm = nn.LSTM(embedding_length, hidden_state_size)
         self.label = nn.Linear(hidden_state_size, output_size)
-        self.sigmoid = nn.Sigmoid()
+        # self.sigmoid = nn.Sigmoid()
+
+        # dont use softmax as cross entropy loss implements already
+        self.softmax = nn.Softmax()
 
     def attention_net(self, lstm_output, final_state):
         hidden = final_state.squeeze(0)
@@ -31,10 +34,8 @@ class Classifier(nn.Module):
         new_hidden_state = torch.bmm(lstm_output.transpose(1, 2), soft_attn_weights.unsqueeze(2)).squeeze(2)
         return new_hidden_state
 
-    def forward(self, input_sentence, batch_size=None):
-        input_sentence_embedding = self.word_embeddings(input_sentence)
+    def forward(self, input_sentence_embedding, batch_size=None):
         input_sentence_embedding = input_sentence_embedding.permute(1, 0, 2)
-
         h_0 = Variable(torch.zeros(1, self.batch_size, self.hidden_state_size)).to(device)
         c_0 = Variable(torch.zeros(1, self.batch_size, self.hidden_state_size)).to(device)
 
@@ -42,11 +43,11 @@ class Classifier(nn.Module):
         output = output.permute(1, 0, 2)
         attn_output = self.attention_net(output, final_hidden_state)
         linear_out = self.label(attn_output)
-        return self.sigmoid(linear_out)
+        return linear_out
 
     def load_embeddings(self, path, lang):
         weights = torch.load(open(os.path.join(path, "embeddings_{}.pth".format(lang)), "rb"))
-        weights = torch.from_numpy(weights).double()
+        weights = torch.from_numpy(weights).float()
         embeddings = nn.Embedding.from_pretrained(weights)
         return embeddings
 
@@ -58,14 +59,3 @@ class Classifier(nn.Module):
         return embeddings[id]
 
 
-if __name__ == '__main__':
-    params = {
-        "batch_size": 2,
-        "hidden_state_size": 10,
-        "vocab_size": 100000,
-        "embedding_length": 300,
-        "output_size": 1
-    }
-    cls = Classifier(**params)
-    input = torch.LongTensor([[12, 123, 87, 980], [23, 34, 76, 98]]).to(device)
-    print(cls.forward(input))
