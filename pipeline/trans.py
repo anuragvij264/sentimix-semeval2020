@@ -49,7 +49,7 @@ class Dataset(data.Dataset):
         # X_ = X_.permute(1, 0)
 
         y = self.data[id]["sent"]
-        return X, X_emoji, X_profanity, y
+        return X, X_emoji, X_profanity, y, id
 
     def tokenize(self, uid, word2id):
 

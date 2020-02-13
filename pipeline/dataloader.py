@@ -14,6 +14,7 @@ def custom_collate(batch):
     emojies = [item[1] for item in batch]
     profanities = [item[2] for item in batch]
     target = [item[3] for item in batch]
+    ids = [item[4] for item in batch]
 
     length = [len(x) for x in sentence]
     data = sequence.pad_sequences(sentence, maxlen=max(length))
@@ -27,7 +28,7 @@ def custom_collate(batch):
     _target = target.view((len(batch), 1))
 
     # target is of shape (batch_size,1)
-    return [data, data_emojies, data_profanities, target]
+    return [data, data_emojies, data_profanities, target, ids]
 
 
 def load_embeddings(path, lang):
