@@ -15,10 +15,11 @@ n_vocab = 100000
 batch_size = 1000
 n_embed = 300
 n_hidden = 250
+depth = 2
 output_size = 3
 
 device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
-net = Classifier(batch_size, n_hidden, n_vocab, n_embed, output_size)
+net = Classifier(batch_size, n_hidden, depth, n_vocab, n_embed, output_size)
 optimizer = optim.Adam(filter(lambda x: x.requires_grad, net.parameters()), lr=0.01)
 
 print_every = 100
