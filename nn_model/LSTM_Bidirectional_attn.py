@@ -57,6 +57,5 @@ class Classifier(nn.Module):
 
     def init_embeddings(self, embeddings_path):
         weights = torch.load(open(embeddings_path, 'rb'))
-        # weights  = torch.from_numpy(weights)
-        embeddings = nn.Embedding.from_pretrained(weights)
+        embeddings = nn.Embedding.from_pretrained(weights.to(device))
         return embeddings

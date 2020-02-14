@@ -31,8 +31,7 @@ clip = 5  # for gradient clip to prevent exploding gradient problem in LSTM/RNN
 
 def load_embeddings(path, lang):
     weights = torch.load(open(os.path.join(path, "embeddings_{}.pth".format(lang)), "rb"))
-    weights = torch.from_numpy(weights).double()
-    # embeddings = nn.Embedding.from_pretrained(weights)
+    weights = torch.from_numpy(weights).double().to(device)
     return weights
 
 
@@ -49,6 +48,7 @@ valid_loader = DataLoader(dataset=d_set_val, batch_size=1000, collate_fn=custom_
 
 
 def train(model, training_data_loader, validation_data_loader):
+    model = model.to(device)
     from tqdm import tqdm
     previous_validation_accuracy = 0
     step = 0
@@ -60,6 +60,7 @@ def train(model, training_data_loader, validation_data_loader):
             inputs = inputs.float()
             inputs, input_emoji, input_profanity, target = inputs.to(device), input_emoji.to(
                 device), input_profanity.to(device), target.to(device)
+            model.train()
             model.zero_grad()
             prediction = model(inputs, input_emoji, input_profanity)
             # prediction is of size (batch_size,C)
