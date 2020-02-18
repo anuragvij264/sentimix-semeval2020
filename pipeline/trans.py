@@ -6,6 +6,7 @@ import torch.nn as nn
 import numpy as np
 from config import data_path, bin_path
 from typing import Set, List
+import pickle
 
 
 class Dataset(data.Dataset):
@@ -17,6 +18,7 @@ class Dataset(data.Dataset):
         self.word2id_en = torch.load(open(os.path.join(binPath, "embeddings", "word2id_en.pth"), "rb"))
         self.word2id_hi = torch.load(open(os.path.join(binPath, "embeddings", "word2id_hi.pth"), "rb"))
         self.data = json.load(open(data_path, 'rb'))
+        self.data_additional_features = pickle.load(open(data_path.split(".")[0] + ".pickle", 'rb'))
         self.list_uids = list(self.data.keys())
         self.vocab = torch.load(open(bin_path + '/vocab.pth', 'rb'))
 
@@ -32,7 +34,11 @@ class Dataset(data.Dataset):
     def __getitem__(self, index):
         id = self.list_uids[index]
         X = self.tokenize(id, self.vocab)
-        X_emoji = self.data[id]["emoticons"]
+        try:
+            X_emoji = list(self.data_additional_features[id][0])
+        except:
+            print(id,":additional_embedding not found")
+            X_emoji = [0 for i in range(2304)]
         X_profanity = [1 * (len(self.data[id]["profanities"]) > 0)]
         y = self.data[id]["sent"]
         return X, X_emoji, X_profanity, y, id

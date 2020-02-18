@@ -26,7 +26,7 @@ class Classifier(nn.Module):
         # self.word_embeddings = self.load_embeddings(path=torch_emb_path)
 
         self.lstm = nn.LSTM(embedding_length, hidden_state_size, depth, dropout=0.3)
-        self.label = nn.Linear(hidden_state_size + 4, output_size)
+        self.label = nn.Linear(hidden_state_size + 2304 + 1, output_size)
         # self.sigmoid = nn.Sigmoid()
 
         # dont use softmax as cross entropy loss implements already

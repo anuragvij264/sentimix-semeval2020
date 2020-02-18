@@ -1,6 +1,8 @@
 import torch
 import shutil
 
+device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
+
 
 def save_ckp(state, is_best, checkpoint_path, best_model_path):
     """
@@ -22,7 +24,7 @@ def load_ckp(checkpoint_fpath, model, optimizer):
     model: model that we want to load checkpoint parameters into
     optimizer: optimizer we defined in previous training
     """
-    checkpoint = torch.load(checkpoint_fpath)
+    checkpoint = torch.load(checkpoint_fpath, map_location=torch.device(device))
     model.load_state_dict(checkpoint['state_dict'])
     optimizer.load_state_dict(checkpoint['optimizer'])
     valid_loss_min = checkpoint['valid_loss_min']

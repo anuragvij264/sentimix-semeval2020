@@ -81,7 +81,7 @@ def test(model, ckp_path, validation_data_loader, optimizer):
     return result
 
 
-ckp_path = "results/current_checkpoint.pt"
+ckp_path = "results/best_checkpoint.pt"
 
 if __name__ == '__main__':
     result = test(net, ckp_path, test_loader, optimizer)
