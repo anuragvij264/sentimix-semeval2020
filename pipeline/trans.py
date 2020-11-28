@@ -4,30 +4,28 @@ from torch.utils import data
 import os
 import torch.nn as nn
 import numpy as np
-from config import data_path
+from config import data_path, bin_path
 from typing import Set, List
+import pickle
+
 
 class Dataset(data.Dataset):
 
-    def __init__(self, binPath, data_path,hi_embeddings,en_embeddings,list_uids=None, list_data=None):
+    def __init__(self, binPath, data_path, hi_embeddings, en_embeddings, list_uids=None, list_data=None):
         self.word2ids = torch.load(os.path.join(binPath, "word2ids.pth"))
-        # self.uid2hin = torch.load(os.path.join(binPath, "uid2hin.pth"))
-        # self.ids2word = torch.load(os.path.join(binPath, "ids2word.pth"))
         # TODO: Fix this mapping,
         self.ids2word = {j: i for i, j in self.word2ids.items()}
         self.word2id_en = torch.load(open(os.path.join(binPath, "embeddings", "word2id_en.pth"), "rb"))
         self.word2id_hi = torch.load(open(os.path.join(binPath, "embeddings", "word2id_hi.pth"), "rb"))
         self.data = json.load(open(data_path, 'rb'))
+        self.data_additional_features = pickle.load(open(data_path.split(".")[0] + ".pickle", 'rb'))
         self.list_uids = list(self.data.keys())
-
-        # self.hi_embeddings = self.load_embeddings(path=os.path.join(binPath, "embeddings"), lang='hi')
-        # self.en_embeddings = self.load_embeddings(path=os.path.join(binPath, "embeddings"), lang='en')
-        self.vocab = torch.load(open('/Users/avij1/Desktop/imp_shit/sec/scripts/vocab.pth','rb'))
+        self.vocab = torch.load(open(bin_path + '/vocab.pth', 'rb'))
 
         self.hi_embeddings = hi_embeddings
         self.en_embeddings = en_embeddings
 
-        self.uid2hi_index = torch.load(open(os.path.join(binPath, "embeddings","uid2hi_idx.pth"), "rb"))
+        self.uid2hi_index = torch.load(open(os.path.join(binPath, "embeddings", "uid2hi_idx.pth"), "rb"))
         self.embed_dim = 300
 
     def __len__(self):
@@ -36,17 +34,14 @@ class Dataset(data.Dataset):
     def __getitem__(self, index):
         id = self.list_uids[index]
         X = self.tokenize(id, self.vocab)
-
-        # idx_hi_list = set(self.uid2hi_index[id])
-
-        # X_ = self.tensorify_sentences(idx_hi_list, X)
-        # print(X_)
-
-        # X_ = X_.permute(1, 0)
-
+        try:
+            X_emoji = list(self.data_additional_features[id][0])
+        except:
+            print(id,":additional_embedding not found")
+            X_emoji = [0 for i in range(2304)]
+        X_profanity = [1 * (len(self.data[id]["profanities"]) > 0)]
         y = self.data[id]["sent"]
-        return X, y
-
+        return X, X_emoji, X_profanity, y, id
 
     def tokenize(self, uid, word2id):
 
@@ -59,4 +54,3 @@ class Dataset(data.Dataset):
                 tokens_list.append(word2id['<UNK>'])
 
         return tokens_list
-        # return [word2id[i.split('\t')[0]] for i in self.data[uid]['text']]
